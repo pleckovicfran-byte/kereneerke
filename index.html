@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRON Staking Simulator</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0b0f14;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 42px;
+}
+
+h1 {
+  margin: 5px 0;
+}
+
+.simulation {
+  background: #332900;
+  border: 1px solid #806900;
+  color: #ffd83d;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #151b23;
+  border: 1px solid #252d38;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+
+.price {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.small {
+  color: #9aa4b2;
+  font-size: 13px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid #303946;
+  background: #0e1319;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #ff1744;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 7px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #252d38;
+}
+
+button.green {
+  background: #159447;
+}
+
+.message {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #10161d;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.earning {
+  font-size: 25px;
+  color: #38d878;
+  font-weight: bold;
+}
+
+.footer {
+  text-align: center;
+  color: #6f7a89;
+  font-size: 12px;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="logo">🔴</div>
+    <h1>TRON Staking</h1>
+    <div class="small"> Staking Simulator</div>
+  </div>
+
+  <div class="simulation">
+    ⚠️Kriptovalute nisu stabilne poput pravih valuta
+  </div>
+
+  <div class="card">
+    <div class="small">TRX CIJENA</div>
+    <div class="price" id="trxPrice">Učitavanje...</div>
+    <div class="small">
+      Stvarna tržišna cijena • osvježavanje svakih 20 sekundi
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="stat">
+      <span>Saldo</span>
+      <strong id="balance">0.0000 TRX</strong>
+    </div>
+
+    <div class="stat">
+      <span>Staked</span>
+      <strong id="staked">0.0000 TRX</strong>
+    </div>
+
+    <div class="stat">
+      <span>Vrijednost</span>
+      <strong id="eurValue">€0.0000</strong>
+    </div>
+
+    <div class="stat">
+      <span>Simulirani APY</span>
+      <strong>5.20% / min</strong>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Deposit</h3>
+
+    <input
+      id="depositAmount"
+      type="number"
+      min="100"
+      step="0.0001"
+      placeholder="Minimalno 100 TRX"
+    >
+
+    <button onclick="deposit()">
+      Deposit TRX
+    </button>
+
+    <div class="small" style="margin-top:8px;">
+      Prvi deposit: minimum 100 TRX
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Staking</h3>
+
+    <div class="small">
+      Simulirana zarada
+    </div>
+
+    <div class="earning" id="earnings">
+      0.0000 TRX
+    </div>
+
+    <button class="green" onclick="startStaking()">
+      Započni staking
+    </button>
+
+    <button class="secondary" onclick="unstake()">
+      Unstake
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Withdrawal</h3>
+
+    <input
+      id="withdrawAmount"
+      type="number"
+      min="0"
+      step="0.0001"
+      placeholder="Količina TRX"
+    >
+
+    <button onclick="withdraw()">
+      Withdraw
+    </button>
+
+    <div id="message" class="message">
+      Spremno za simulaciju.
+    </div>
+
+  </div>
+
+  <div class="card">
+    <h3>Dodatni deposit</h3>
+
+    <div class="small">
+      Potrebni simulirani deposit nakon prve isplate:
+    </div>
+
+    <div style="font-size:22px;margin:8px 0;">
+      €750.00
+    </div>
+
+    <div class="small">
+      Točan TRX iznos automatski se računa prema trenutnoj cijeni.
+    </div>
+
+    <button class="secondary" onclick="extraDeposit()">
+      Deposit €750 vrijednosti TRX
+    </button>
+  </div>
+
+  <button class="secondary" onclick="resetSimulation()">
+    Reset simulacije
+  </button>
+
+  <div class="footer">
+    TRON Staking Simulator<br>
+    Virtualni podaci • Nema stvarnih uplata ili isplata
+  </div>
+
+</div>
+
+<script>
+
+const API =
+  "https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=eur";
+
+const STORAGE = "tronSimulationGitHubV4";
+
+let state = JSON.parse(
+  localStorage.getItem(STORAGE)
+) || {
+  price: 0,
+  balance: 0,
+  staked: 0,
+  stakingStart: null,
+  earnings: 0,
+  firstWithdrawal: false,
+  extraDeposit: false,
+  banned: false
+};
+
+
+/* =========================
+   TRX PRICE
+========================= */
+
+async function updatePrice() {
+
+  try {
+
+    const response = await fetch(API);
+
+    const data = await response.json();
+
+    state.price = data.tron.eur;
+
+    save();
+
+    updateUI();
+
+  } catch (error) {
+
+    console.log("Greška kod cijene TRX:", error);
+
+    if (!state.price) {
+      document.getElementById("trxPrice").innerText =
+        "Nije dostupno";
+    }
+  }
+}
+
+
+/* =========================
+   SAVE
+========================= */
+
+function save() {
+
+  localStorage.setItem(
+    STORAGE,
+    JSON.stringify(state)
+  );
+}
+
+
+/* =========================
+   DEPOSIT
+========================= */
+
+function deposit() {
+
+  if (state.banned) return;
+
+  const amount =
+    Number(document.getElementById("depositAmount").value);
+
+  if (!amount || amount <= 0) {
+    showMessage("Unesi količinu TRX.");
+    return;
+  }
+
+  if (!state.firstWithdrawal && state.balance === 0) {
+
+    if (amount < 100) {
+      showMessage(
+        "Minimalni prvi deposit je 100 TRX."
+      );
+      return;
+    }
+
+  }
+
+  state.balance += amount;
+
+  save();
+  updateUI();
+
+  showMessage(
+    ` Dodano ${amount.toFixed(4)} TRX.`
+  );
+}
+
+
+/* =========================
+   STAKING
+========================= */
+
+function startStaking() {
+
+  if (state.banned) return;
+
+  if (state.staked > 0) {
+    showMessage("Staking je već aktivan.");
+    return;
+  }
+
+  if (state.balance <= 0) {
+    showMessage("Prvo napravi deposit.");
+    return;
+  }
+
+  state.staked = state.balance;
+  state.balance = 0;
+  state.stakingStart = Date.now();
+  state.earnings = 0;
+
+  save();
+  updateUI();
+
+  showMessage(
+    "Staking je pokrenut. Zarada se računa uživo."
+  );
+}
+
+
+/* =========================
+   LIVE EARNINGS
+========================= */
+
+function calculateEarnings() {
+
+  if (
+    state.staked <= 0 ||
+    !state.stakingStart
+  ) {
+    return 0;
+  }
+
+  const elapsedMinutes =
+    (Date.now() - state.stakingStart) / 60000;
+
+  /*
+    5.20% po minuti
+  */
+
+  return state.staked * 0.052 * elapsedMinutes;
+}
+
+
+/* =========================
+   UNSTAKE
+========================= */
+
+function unstake() {
+
+  if (state.staked <= 0) {
+    showMessage("Nema aktivnog stakinga.");
+    return;
+  }
+
+  const earnings = calculateEarnings();
+
+  state.earnings = earnings;
+
+  state.balance =
+    state.staked + earnings;
+
+  state.staked = 0;
+  state.stakingStart = null;
+
+  save();
+  updateUI();
+
+  showMessage(
+    `Staking završen. Zaradio si ${earnings.toFixed(4)} TRX.`
+  );
+}
+
+
+/* =========================
+   WITHDRAW
+========================= */
+
+function withdraw() {
+
+  if (state.banned) {
+
+    showMessage(
+      " isplata onemogućena.<br>" +
+      "<b>Nalog je zabranjen.</b>"
+    );
+
+    return;
+  }
+
+  if (state.staked > 0) {
+
+    showMessage(
+      "Prvo napravi unstake."
+    );
+
+    return;
+  }
+
+  const amount =
+    Number(document.getElementById("withdrawAmount").value);
+
+  if (!amount || amount <= 0) {
+    showMessage("Unesi količinu za isplatu.");
+    return;
+  }
+
+  if (amount > state.balance) {
+
+    showMessage(
+      "Nemaš dovoljno TRX u saldu."
+    );
+
+    return;
+  }
+
+
+  /*
+    PRVA ISPLATA
+  */
+
+  if (!state.firstWithdrawal) {
+
+    const payout =
+      Math.min(amount, 150);
+
+    state.balance -= payout;
+    state.firstWithdrawal = true;
+
+    save();
+    updateUI();
+
+    const requiredTRX =
+      750 / state.price;
+
+    showMessage(
+      `prva isplata od ` +
+      `<b>${payout.toFixed(4)} TRX</b> je obrađena.<br><br>` +
+
+      `Za nastavak potreban je ` +
+      `dodatni deposit od najmanje ` +
+      `<b>€750.00</b> vrijednosti TRX.<br><br>` +
+
+      `Po trenutnoj cijeni to iznosi ` +
+      `<b>${requiredTRX.toFixed(4)} TRX</b>.`
+    );
+
+    return;
+  }
+
+
+  /*
+    NAKON PRVE ISPLATE
+  */
+
+  if (!state.extraDeposit) {
+
+    const requiredTRX =
+      750 / state.price;
+
+    showMessage(
+      `SIMULACIJA — isplata trenutno nije dostupna.<br><br>` +
+
+      `Potreban je dodatni deposit od najmanje ` +
+      `<b>€750.00</b> vrijednosti TRX.<br><br>` +
+
+      `Trenutna cijena: ` +
+      `<b>€${state.price.toFixed(4)}</b><br>` +
+
+      `Potrebno: ` +
+      `<b>${requiredTRX.toFixed(4)} TRX</b>`
+    );
+
+    return;
+  }
+
+
+  /*
+    NAKON DODATNOG DEPOSITA
+  */
+
+  state.banned = true;
+  state.balance = 0;
+
+  save();
+  updateUI();
+
+  showMessage(
+    ` isplata onemogućena.<br><br>` +
+    `<b>Nalog je zabranjen.</b><br><br>` +
+    `Croatia - 2026.`
+  );
+}
+
+
+/* =========================
+   EXTRA DEPOSIT
+========================= */
+
+function extraDeposit() {
+
+  if (!state.firstWithdrawal) {
+
+    showMessage(
+      "Dodatni deposit se otključava nakon prve isplate."
+    );
+
+    return;
+  }
+
+  if (state.extraDeposit) {
+
+    showMessage(
+      "Dodatni deposit je već napravljen."
+    );
+
+    return;
+  }
+
+  const requiredTRX =
+    750 / state.price;
+
+  state.balance += requiredTRX;
+  state.extraDeposit = true;
+
+  save();
+  updateUI();
+
+  showMessage(
+    ` dodano ` +
+    `<b>${requiredTRX.toFixed(4)} TRX</b>` +
+    ` (€750.00 vrijednosti prema trenutnoj cijeni).`
+  );
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function updateUI() {
+
+  document.getElementById("trxPrice").innerText =
+    state.price
+      ? `€${state.price.toFixed(4)}`
+      : "Učitavanje...";
+
+  document.getElementById("balance").innerText =
+    `${state.balance.toFixed(4)} TRX`;
+
+  document.getElementById("staked").innerText =
+    `${state.staked.toFixed(4)} TRX`;
+
+  const totalTRX =
+    state.balance +
+    state.staked +
+    calculateEarnings();
+
+  document.getElementById("eurValue").innerText =
+    `€${(totalTRX * state.price).toFixed(4)}`;
+
+  document.getElementById("earnings").innerText =
+    `${calculateEarnings().toFixed(4)} TRX`;
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(text) {
+
+  document.getElementById("message").innerHTML =
+    text;
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+function resetSimulation() {
+
+  localStorage.removeItem(STORAGE);
+
+  location.reload();
+}
+
+
+/* =========================
+   LIVE UPDATE
+========================= */
+
+setInterval(() => {
+
+  updateUI();
+
+}, 1000);
+
+
+/*
+  TRX cijena:
+  odmah + svakih 20 sekundi
+*/
+
+updatePrice();
+
+setInterval(() => {
+
+  updatePrice();
+
+}, 20000);
+
+</script>
+
+</body>
+</html>
